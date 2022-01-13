@@ -50,13 +50,19 @@ def evaluateBoardState():
     return something
 
 
+def validMoves(matrix, row, col):
+    pass
 
-
+    '''
+    Check up first
+    '''
+    # check for bounds first
+    
 
 
 if __name__ == "__main__":
     
-    blank = [[None, None, None, None, None, None, None, None],
+    blank =[[None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
@@ -69,8 +75,8 @@ if __name__ == "__main__":
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
-            [None, None, "X", None, None, None, None, None],
-            [None, None, None, None, "O", None, None, None],
+            [None, None,  "X", None, None, None, None, None],
+            [None, None, None, None,  "O", None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None]]
     
