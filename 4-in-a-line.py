@@ -10,6 +10,8 @@ class Game:
     def __init__(self):
         self.matrix = [[None for i in range(8)] for i in range(8)]
 
+
+
 def printMatrix(matrix):
     
     alphabet = ["A", "B", "C", "D", "E", "F", "G", "H"]
@@ -35,6 +37,22 @@ def printMatrix(matrix):
                     print("O", end = " ")
         print()
     print()
+    
+def evaluateBoardState():
+    pass
+
+    something = 0
+
+    # check for if the opponent is going to win, and prioritize that over anything else
+    
+    
+    
+    return something
+
+
+
+
+
 
 if __name__ == "__main__":
     
