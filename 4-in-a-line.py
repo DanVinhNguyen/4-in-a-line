@@ -7,9 +7,14 @@ Created on Wed Jan 12 20:40:41 2022
 
 class Game:
     
-    def __init__(self):
-        self.matrix = [[None for i in range(8)] for i in range(8)]
+    def __init__(self, matrix = None):
+        
+        if matrix is None:
+            self.matrix = [[None for i in range(8)] for i in range(8)]
+        else:
+            self.matrix = matrix
 
+        self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
 
 
 
@@ -92,7 +97,7 @@ def evaluateBoardState_v2(matrix, userKey):
     evaluationTotal = 0
 
     # check for if the opponent is going to win, and prioritize that over anything else
-    
+
     # parse through the entire matrix and look for the userKey (either O or X)
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
@@ -165,12 +170,28 @@ def validMoves(matrix, userKey):
     pass
     
     
-                
+    
 
     '''
     Check up first
     '''
     # check for bounds first
+    
+# function checks if the spot is both in bounds and is not pre-populated
+def isSafe(matrix, row, col):
+    n = len(matrix)
+    
+    # bounds check
+    if row < 0 or row >= n or col < 0 or col >= n:
+        print("Bounds error")
+        return False
+    
+    # value check
+    if matrix[row][col] != None:
+        print("value error")
+        return False
+    
+    return True
 
 
 def printMatrix(matrix):
@@ -217,8 +238,13 @@ if __name__ == "__main__":
             [None, None, None, None, None, None, None, None]]
     
     
+    #evaluationTotal = test1(computer) - test2(user)
+    
+    
     printMatrix(blank)
     
     evaluateBoardState(blank, "X")
 
     evaluateBoardState_v2(blank, "X")
+    
+    print(isSafe(blank, 3, 8))
