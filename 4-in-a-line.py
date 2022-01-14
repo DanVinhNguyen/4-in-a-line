@@ -201,9 +201,9 @@ if __name__ == "__main__":
     blank =[[None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
-            [None, None, None, None, "X", "O", None, None],
-            [None, None, None, None, "X", "O", "X", None],
-            [None, None, None, None, None, None, None, None],
+            [None, None, None, None, None, None, "O", None],
+            [None, None, None, None, None, "O", "X", None],
+            [None, None, None, None, None, None, "O", None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None]]
     
