@@ -4,8 +4,10 @@ Created on Wed Jan 12 20:40:41 2022
 
 @author: Dan
 """
+import copy
 
-class Game:
+
+class Board:
     
     def __init__(self, matrix = None):
         
@@ -112,8 +114,89 @@ def evaluateBoardState(matrix, userKey):
     return evaluationTotal
 
 
-def generateChildren
+# this function generates children around the already inserted inputs
+def generateChildren(matrix, userKey):
+    n = len(matrix)
+    childrenList = []
     
+    # copy the original matrix
+    parent = copy.deepcopy(matrix)
+    
+    # iterate through the entire matrix
+    for row in n:
+        for col in n:
+            # search for either X or O to generate children off of
+            if matrix[row][col] == "X" or matrix[row][col] == "O":
+                
+                # generate the children around inputs
+                ''' up '''
+                childCheck(parent, row - 1, col, childrenList, userKey)
+                '''
+                if isSafe(matrix, row - 1, col):
+                    # set the matrix as the userKey (either O or X)
+                    parent[row - 1][col] = userKey
+                    # create a new child node
+                    child = Board(parent)
+                    # undo the change
+                    parent[row - 1][col] = None
+                    
+                    # add child to children list
+                    childrenList.add(child)
+                '''
+                
+                ''' down '''
+                if isSafe(matrix, row + 1, col):
+                    # set the matrix as the userKey (either O or X)
+                    parent[row + 1][col] = userKey
+                    # create a new child node
+                    child = Board(parent)
+                    # undo the change
+                    parent[row + 1][col] = None
+                    
+                    # add child to children list
+                    childrenList.add(child)
+                    
+                ''' right '''
+                if isSafe(matrix, row, col + 1):
+                    # set the matrix as the userKey (either O or X)
+                    parent[row][col + 1] = userKey
+                    # create a new child node
+                    child = Board(parent)
+                    # undo the change
+                    parent[row][col + 1] = None
+                    
+                    # add child to children list
+                    childrenList.add(child)
+    
+                ''' left '''
+                if isSafe(matrix, row, col - 1):
+                    # set the matrix as the userKey (either O or X)
+                    parent[row][col - 1] = userKey
+                    # create a new child node
+                    child = Board(parent)
+                    # undo the change
+                    parent[row][col - 1] = None
+                    
+                    # add child to children list
+                    childrenList.add(child)
+    
+    return
+
+
+
+def childCheck(parent, row, col, childrenList, userKey):
+    if isSafe(parent, row - 1, col):
+        # set the matrix as the userKey (either O or X)
+        parent[row - 1][col] = userKey
+        # create a new child node
+        child = Board(parent)
+        # undo the change
+        parent[row - 1][col] = None
+        
+        # add child to children list
+        childrenList.add(child)
+
+
 # function checks if the spot is both in bounds and is not pre-populated
 def isSafe(matrix, row, col):
     n = len(matrix)
