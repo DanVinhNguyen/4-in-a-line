@@ -17,6 +17,29 @@ class Board:
             self.matrix = matrix
 
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
+        
+    def printMatrix(self):
+        matrix = self.matrix
+        
+        alphabet = ["A", "B", "C", "D", "E", "F", "G", "H"]
+        n = len(matrix)
+        
+        print("  1 2 3 4 5 6 7 8")
+        for row in range(n):
+            for col in range(n):
+                if col == 0:
+                    print(f"{alphabet[row]}", end = " ")
+    
+                if matrix[row][col] == None:
+                    print("_", end = " ")
+                elif matrix[row][col] == "X":
+                    print("X", end = " ")
+                elif matrix[row][col] == "O":
+                    print("O", end = " ")
+                elif matrix[row][col] == "W":
+                    print("W", end = " ")
+            print()
+        print()
 
 
 # this function counts the original value in it's calculation
@@ -30,19 +53,25 @@ def evaluateBoardState(matrix, userKey):
             # prioritize winning
             winCondition = 0
             # search for win condition on row
-            for i in range(4):
-                if matrix[row + i][col] == userKey:
-                    winCondition += 1
-                else:
-                    winCondition = 0
-                    break
-            # search for win condition on column
-            for i in range(4):
-                if matrix[row][col + i] == userKey:
-                    winCondition += 1
-                else:
-                    winCondition = 0
-                    break
+            
+            # checks column for win
+            if inBounds(matrix, row + 3, col):
+                for i in range(4):
+                    if matrix[row + i][col] == userKey:
+                        winCondition += 1
+                    else:
+                        winCondition = 0
+                        break
+            
+            # checks row for win
+            if inBounds(matrix, row, col + 4):
+                # search for win condition on column
+                for i in range(4):
+                    if matrix[row][col + i] == userKey:
+                        winCondition += 1
+                    else:
+                        winCondition = 0
+                        break
             
             # if the win condition is met, set the evaluation total to a really high number
             if winCondition == 4:
@@ -114,6 +143,37 @@ def evaluateBoardState(matrix, userKey):
     return evaluationTotal
 
 
+def evaluateDirection(matrix, row, col, userKey, rowMulti, colMulti, currentTotal):
+    temp = 0
+    
+    # check for index out of bounds
+    if inBounds(matrix, row + (3 * rowMulti), col + (3 * colMulti)):
+        
+        # check if the matrix values are valid
+        for i in range(1, 4):
+            if matrix[row + (i * rowMulti)][col + (i * colMulti)] == userKey:
+                # check how userKeys are in the row and add to temp
+                temp += 5
+            elif matrix[row + (i * rowMulti)][col + (i * colMulti)] is None:
+                temp += 1
+            else:
+                temp = 0
+                break
+        currentTotal += temp
+            
+    return currentTotal
+
+
+def inBounds(matrix, row, col):
+    # we assume that matrix is an n x n matrix
+    n = len(matrix)
+    
+    if row >= n or row < 0 or col >= n or col < 0:
+        return False
+    
+    return True
+
+
 # this function generates children around the already inserted inputs
 def generateChildren(matrix, userKey):
     n = len(matrix)
@@ -123,64 +183,25 @@ def generateChildren(matrix, userKey):
     parent = copy.deepcopy(matrix)
     
     # iterate through the entire matrix
-    for row in n:
-        for col in n:
+    for row in range(n):
+        for col in range(n):
             # search for either X or O to generate children off of
             if matrix[row][col] == "X" or matrix[row][col] == "O":
                 
                 # generate the children around inputs
                 ''' up '''
                 childCheck(parent, row - 1, col, childrenList, userKey)
-                '''
-                if isSafe(matrix, row - 1, col):
-                    # set the matrix as the userKey (either O or X)
-                    parent[row - 1][col] = userKey
-                    # create a new child node
-                    child = Board(parent)
-                    # undo the change
-                    parent[row - 1][col] = None
-                    
-                    # add child to children list
-                    childrenList.add(child)
-                '''
                 
                 ''' down '''
-                if isSafe(matrix, row + 1, col):
-                    # set the matrix as the userKey (either O or X)
-                    parent[row + 1][col] = userKey
-                    # create a new child node
-                    child = Board(parent)
-                    # undo the change
-                    parent[row + 1][col] = None
-                    
-                    # add child to children list
-                    childrenList.add(child)
+                childCheck(parent, row + 1, col, childrenList, userKey)
                     
                 ''' right '''
-                if isSafe(matrix, row, col + 1):
-                    # set the matrix as the userKey (either O or X)
-                    parent[row][col + 1] = userKey
-                    # create a new child node
-                    child = Board(parent)
-                    # undo the change
-                    parent[row][col + 1] = None
-                    
-                    # add child to children list
-                    childrenList.add(child)
+                childCheck(parent, row, col + 1, childrenList, userKey)
     
                 ''' left '''
-                if isSafe(matrix, row, col - 1):
-                    # set the matrix as the userKey (either O or X)
-                    parent[row][col - 1] = userKey
-                    # create a new child node
-                    child = Board(parent)
-                    # undo the change
-                    parent[row][col - 1] = None
-                    
-                    # add child to children list
-                    childrenList.add(child)
+                childCheck(parent, row, col - 1, childrenList, userKey)
     
-    return
+    return childrenList
 
 
 
@@ -194,7 +215,7 @@ def childCheck(parent, row, col, childrenList, userKey):
         parent[row - 1][col] = None
         
         # add child to children list
-        childrenList.add(child)
+        childrenList.append(child)
 
 
 # function checks if the spot is both in bounds and is not pre-populated
@@ -242,9 +263,9 @@ if __name__ == "__main__":
     blank =[[None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None,  "O", None],
-            [None, None, None, None, None,  "O",  "X", None],
-            [None, None, None, None, None, None,  "O", None],
+            [None, None, None, None, None, None, None, None],
+            [None, None, None, None, None, None,  "X", None],
+            [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None]]
     
@@ -257,14 +278,25 @@ if __name__ == "__main__":
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None]]
     
-    
     #evaluationTotal = test1(computer) - test2(user)
     
+    #printMatrix(blank)
     
-    printMatrix(blank)
+    #evaluateBoardState(blank, "X")
     
-    evaluateBoardState(blank, "X")
-
-    evaluateBoardState_v2(blank, "X")
+    total = 0
     
-    print(isSafe(blank, 3, 8))
+    total = evaluateDirection(blank, 4, 6, "X", -1, 0, total)
+    total = evaluateDirection(blank, 4, 6, "X", 1, 0, total)
+    total = evaluateDirection(blank, 4, 6, "X", 0, -1, total)
+    total = evaluateDirection(blank, 4, 6, "X", 0, 1, total)
+    
+    print(total)
+    
+    '''
+    child = generateChildren(blank, "X")
+    
+    for i in child:
+        i.printMatrix()
+    '''
+    #import pdb; pdb.set_trace()
