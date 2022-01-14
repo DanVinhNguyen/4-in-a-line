@@ -17,16 +17,36 @@ class Game:
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
 
 
-
 # this function counts the original value in it's calculation
 def evaluateBoardState(matrix, userKey):
     evaluationTotal = 0
 
-    # check for if the opponent is going to win, and prioritize that over anything else
-    
     # parse through the entire matrix and look for the userKey (either O or X)
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
+            
+            # prioritize winning
+            winCondition = 0
+            # search for win condition on row
+            for i in range(4):
+                if matrix[row + i][col] == userKey:
+                    winCondition += 1
+                else:
+                    winCondition = 0
+                    break
+            # search for win condition on column
+            for i in range(4):
+                if matrix[row][col + i] == userKey:
+                    winCondition += 1
+                else:
+                    winCondition = 0
+                    break
+            
+            # if the win condition is met, set the evaluation total to a really high number
+            if winCondition == 4:
+                evaluationTotal = 1000000
+            
+            
             # check for the selected key (either O or X)
             if matrix[row][col] == userKey:
                 ''' up '''
@@ -92,90 +112,7 @@ def evaluateBoardState(matrix, userKey):
     return evaluationTotal
 
 
-# this function doesn't count it's original value in the calculation
-def evaluateBoardState_v2(matrix, userKey):
-    evaluationTotal = 0
-
-    # check for if the opponent is going to win, and prioritize that over anything else
-
-    # parse through the entire matrix and look for the userKey (either O or X)
-    for row in range(len(matrix)):
-        for col in range(len(matrix[row])):
-            # check for the selected key (either O or X)
-            if matrix[row][col] == userKey:
-                ''' up '''
-                # check for index out of bounds
-                if (row - 3) >= 0:
-                    temp = 0
-                    # check if the matrix values are ok
-                    for i in range(4):
-                        if matrix[row - i][col] == userKey: #or matrix[row - i][col] == None:
-                            # check how userKeys are in the row and add to temp
-                            temp += 5
-                        elif matrix[row - i][col] == None:
-                            temp += 1
-                        else:
-                            temp = 0
-                            break
-                    evaluationTotal += temp
-                    
-                ''' down '''
-                if (row + 3) < len(matrix):
-                    temp = 0
-                    # check if the matrix values are ok
-                    for i in range(4):
-                        if matrix[row + i][col] == userKey: # or matrix[row + i][col] == None:
-                            # check how userKeys are in the row and add to temp
-                            temp += 5
-                        elif matrix[row + i][col] == None:
-                            temp += 1
-                        else:
-                            temp = 0
-                            break
-                    evaluationTotal += temp
-                    
-                ''' right '''
-                if (col + 3) < len(matrix):
-                    temp = 0
-                    # check if matrix values are ok
-                    for i in range(4):
-                        if matrix[row][col + i] == userKey: # or matrix[row][col + i] == None:
-                            temp += 5
-                        elif matrix[row][col + i] == None:
-                            temp += 1
-                        else:
-                            temp = 0
-                            break
-                    evaluationTotal += temp
-                    
-                ''' left '''
-                if (col - 3) >= 0:
-                    temp = 0
-                    # check if matrix values are ok
-                    for i in range(4):
-                        if matrix[row][col - i] == userKey: # or matrix[row][col - i] == None:
-                            temp += 5
-                        elif matrix[row][col - i] == None:
-                            temp += 1
-                        else:
-                            temp = 0
-                            break
-                    evaluationTotal += temp
-                    
-    print(f"Evaluation Total: {evaluationTotal}")
-    return evaluationTotal
-
-
-def validMoves(matrix, userKey):
-    pass
-    
-    
-    
-
-    '''
-    Check up first
-    '''
-    # check for bounds first
+def generateChildren
     
 # function checks if the spot is both in bounds and is not pre-populated
 def isSafe(matrix, row, col):
