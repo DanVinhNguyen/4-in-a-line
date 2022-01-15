@@ -16,27 +16,23 @@ class Board:
             self.matrix = matrix
 
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
-        
+
+    
     def printMatrix(self):
         matrix = self.matrix
-        
-        alphabet = ["A", "B", "C", "D", "E", "F", "G", "H"]
         n = len(matrix)
         
         print("  1 2 3 4 5 6 7 8")
         for row in range(n):
             for col in range(n):
                 if col == 0:
-                    print(f"{alphabet[row]}", end = " ")
-    
+                    print(f"{chr(65 + row)}", end = " ")
                 if matrix[row][col] == None:
                     print("_", end = " ")
                 elif matrix[row][col] == "X":
                     print("X", end = " ")
                 elif matrix[row][col] == "O":
                     print("O", end = " ")
-                elif matrix[row][col] == "W":
-                    print("W", end = " ")
             print()
         print()
         
@@ -147,8 +143,6 @@ def generateChildren(matrix, userKey):
     n = len(matrix)
     childrenList = []
     
-    # copy the original matrix
-    
     # iterate through the entire matrix
     for row in range(n):
         for col in range(n):
@@ -175,8 +169,6 @@ def generateChildren(matrix, userKey):
 def generateChildren_v2(matrix, userKey):
     n = len(matrix)
     childrenList = []
-    
-    # copy the original matrix
     
     # iterate through the entire matrix
     for row in range(n):
@@ -268,11 +260,4 @@ if __name__ == "__main__":
     
     child = generateChildren_v2(blank, "O")
 
-    print(f"Number of Children: {len(child)}")
-    
-    for i, obj in enumerate(child):
-        print(f"{i + 1}: {obj.evaluation}")
-        '''
-        if (i + 1) % 10 == 0:
-            print()
-        '''
+    child[0].printMatrix()
