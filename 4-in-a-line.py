@@ -18,6 +18,7 @@ class Board:
 
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
         
+        
     def printMatrix(self):
         matrix = self.matrix
         
@@ -147,7 +148,6 @@ def generateChildren(matrix, userKey):
     childrenList = []
     
     # copy the original matrix
-    parent = copy.deepcopy(matrix)
     
     # iterate through the entire matrix
     for row in range(n):
@@ -157,41 +157,34 @@ def generateChildren(matrix, userKey):
                 #import pdb; pdb.set_trace()
                 # generate the children around inputs
                 ''' up '''
-                child = generateChild(parent, row - 1, col, userKey)
-                if child is not None:
-                    childrenList.append(child)
+                childrenList = generateChild(matrix, row - 1, col, userKey, childrenList)
                 
                 ''' down '''
-                child = generateChild(parent, row + 1, col, userKey)
-                if child is not None:
-                    childrenList.append(child)
+                childrenList = generateChild(matrix, row + 1, col, userKey, childrenList)
                     
                 ''' right '''
-                child = generateChild(parent, row, col + 1, userKey)
-                if child is not None:
-                    childrenList.append(child)
+                childrenList = generateChild(matrix, row, col + 1, userKey, childrenList)
     
                 ''' left '''
-                child = generateChild(parent, row, col - 1, userKey)
-                if child is not None:
-                    childrenList.append(child)
+                childrenList = generateChild(matrix, row, col - 1, userKey, childrenList)
     
     return childrenList
 
 
-def generateChild(parent, row, col, userKey):
+# generates one children in a specific cardinal direction
+def generateChild(parent, row, col, userKey, childrenList):
+    tempParent = copy.deepcopy(parent)
     child = None
     
+    # check if there is a bounds error, or value already placed in slot
     if isSafe(parent, row, col):
         # set the matrix as the userKey (either O or X)
-        parent[row][col] = userKey
+        tempParent[row][col] = userKey
         # create a new child node
-        child = Board(parent)
+        child = Board(tempParent)
+        childrenList.append(child)
         
-        # undo the change
-        parent[row][col] = None
-        
-    return child
+    return childrenList
 
 
 # function checks if the spot is both in bounds and is not pre-populated
@@ -262,5 +255,5 @@ if __name__ == "__main__":
     
     print(child)
     
-    for i in child:
-        i.printMatrix()
+    for i in range(len(child)):
+        child[i].printMatrix()
