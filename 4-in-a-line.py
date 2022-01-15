@@ -10,14 +10,12 @@ import copy
 class Board:
     
     def __init__(self, matrix = None):
-        
         if matrix is None:
             self.matrix = [[None for i in range(8)] for i in range(8)]
         else:
             self.matrix = matrix
 
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
-        
         
     def printMatrix(self):
         matrix = self.matrix
@@ -110,6 +108,7 @@ def evaluateBoardState(matrix, userKey):
     return evaluationTotal
 
 
+# updates currentTotal with a specific direction
 def evaluateDirection(matrix, row, col, userKey, rowMulti, colMulti, currentTotal):
     temp = 0
     
@@ -131,6 +130,7 @@ def evaluateDirection(matrix, row, col, userKey, rowMulti, colMulti, currentTota
     return currentTotal
 
 
+# function that checks if the coordinates are within the matrix
 def inBounds(matrix, row, col):
     # we assume that matrix is an n x n matrix
     n = len(matrix)
@@ -171,6 +171,21 @@ def generateChildren(matrix, userKey):
     return childrenList
 
 
+# this function generates children for every single available space
+def generateChildren_v2(matrix, userKey):
+    n = len(matrix)
+    childrenList = []
+    
+    # copy the original matrix
+    
+    # iterate through the entire matrix
+    for row in range(n):
+        for col in range(n):
+                childrenList = generateChild(matrix, row, col, userKey, childrenList)
+            
+    return childrenList
+
+
 # generates one children in a specific cardinal direction
 def generateChild(parent, row, col, userKey, childrenList):
     tempParent = copy.deepcopy(parent)
@@ -193,12 +208,12 @@ def isSafe(matrix, row, col):
     
     # bounds check
     if row < 0 or row >= n or col < 0 or col >= n:
-        print("Bounds error")
+        #print("Bounds error")
         return False
     
     # value check
     if matrix[row][col] != None:
-        print("value error")
+        #print("value error")
         return False
     
     return True
@@ -251,9 +266,13 @@ if __name__ == "__main__":
     
     #printMatrix(blank)
     
-    child = generateChildren(blank, "X")
+    child = generateChildren_v2(blank, "O")
+
+    print(f"Number of Children: {len(child)}")
     
-    print(child)
-    
-    for i in range(len(child)):
-        child[i].printMatrix()
+    for i, obj in enumerate(child):
+        print(f"{i + 1}: {obj.evaluation}")
+        '''
+        if (i + 1) % 10 == 0:
+            print()
+        '''
