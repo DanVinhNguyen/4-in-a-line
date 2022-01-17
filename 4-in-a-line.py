@@ -16,8 +16,25 @@ class Board:
             self.matrix = matrix
 
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
+        
+        self.moveOrder = []
 
+    def getMoveOrder(self):
+        return self.moveOrder
     
+    def setMoveOrder(self, order):
+        self.moveOrder = order
+
+    def resetMoveOrder(self):
+        self.moveOrder = []
+        
+    def appendMove(self, move):
+        self.moveOrder.append(move)
+
+    # this is what determines the best fit move on the board.
+    def getFirstMove(self):
+        return self.moveOrder[0]
+
     def printMatrix(self):
         matrix = self.matrix
         n = len(matrix)
@@ -50,78 +67,84 @@ class Board:
         print()
         
         
-# utility to help process "v" in the alpha-beta recursive calling
-class Utility_v:
+# utility to help process elements in the alpha-beta recursive calling
+class Utility_function:
     def __init__(self, evaluation):
         self.evaluation = evaluation
 
 
 # alpha beta search algorithm
 def alpha_beta_search(board, userKey):
-    
+    # sets the time of termination
     terminalTime = time.time_ns() + 5000000000
     
-    alpha = Utility_v(-math.inf)
-    beta = Utility_v(math.inf)
+    # utility functions for placeholders (used for obj.evaluation checking)
+    alpha = Utility_function(-math.inf)
+    beta = Utility_function(math.inf)
     
+    # resets the move order as to preserve the first move.
+    board.resetMoveOrder()
+    
+    # actual algorithm
     boardDescision = max_value(board.matrix, alpha, beta, userKey, terminalTime)
     
     return boardDescision
 
 
-def max_value(matrix, alpha, beta, userKey, terminalTime):
+# half of the recursive calls
+def max_value(board, alpha, beta, userKey, terminalTime):
     # check for terminal condition (time passed (5 seconds))
-    if time.time_ns() >= terminalTime:
-        return Board(matrix)
+    if time.time_ns() >= terminalTime and isSolved(board) == False:
+        return board
     
     # set the utility holder to negative infinity
-    v = Utility_v(-math.inf)
+    v = Utility_function(-math.inf)
     
     # generate successors
-    successors = generateChildren_v2(matrix, oppositeKey(userKey))
+    successors = generateChildren_v2(board, oppositeKey(userKey))
     
     # process all board states and find the max value
     for obj in successors:
-        v = max_evaluation(v, min_value(obj.matrix, alpha, beta, oppositeKey(userKey), terminalTime))
+        v = max_evaluation(v, min_value(obj, alpha, beta, oppositeKey(userKey), terminalTime))
         
         if v.evaluation >= beta.evaluation:
             return v
         
         alpha = max_evaluation(alpha, v)
-        
     return v
 
 
-
-def min_value(matrix, alpha, beta, userKey, terminalTime):
+# the other half of the recursive calling
+def min_value(board, alpha, beta, userKey, terminalTime):
     # check for terminal condition (time passed (5 seconds))
-    if time.time_ns() >= terminalTime:
-        return Board(matrix)
+    if time.time_ns() >= terminalTime and isSolved(board) == False:
+        return board
     
     # set the utility holder to positive infinity
-    v = Utility_v(math.inf)
+    v = Utility_function(math.inf)
     
     #generate successors
-    successors = generateChildren_v2(matrix, oppositeKey(userKey))
+    successors = generateChildren_v2(board, oppositeKey(userKey))
     
     for obj in successors:
-        v = max_evaluation(v, max_value(obj.matrix, alpha, beta, oppositeKey(userKey), terminalTime))
+        v = min_evaluation(v, max_value(obj.matrix, alpha, beta, oppositeKey(userKey), terminalTime))
     
         if v.evaluation <= alpha.evaluation:
             return v
         
         beta = min_evaluation(beta, v)
-    
     return v
 
 
+# returns the object with higher evaluation
 def max_evaluation(obj1, obj2):
     if obj1.evaluation >= obj2.evaluation:
         return obj1
     else:
         return obj2
     
-    
+
+# returns the object with lower evaluation
 def min_evaluation(obj1, obj2):
     if obj1.evaluation <= obj2.evaluation:
         return obj1
@@ -135,6 +158,13 @@ def oppositeKey(userKey):
         return "O"
     else:
         return "X"
+    
+# checks the board state to see if it has a solved solution
+def isSolved(board):
+    # There is a buffer of 1,000,000 in the evaluation score to acount for all possible combinations
+    if (board.evaluation >= 90000000) or (board.evaluation <= -90000000):
+        return True
+    return False
 
 
 # this function counts the original value in it's calculation
@@ -160,10 +190,10 @@ def evaluateBoardState(matrix, userKey):
                     
             # if the win condition is met, set the evaluation total to a really high number
             if winCondition == 4:
-                evaluationTotal += 1000000
+                evaluationTotal += 100000000
             
             # checks row for win
-            if inBounds(matrix, row, col + 4):
+            if inBounds(matrix, row, col + 3):
                 # search for win condition on column
                 for i in range(4):
                     if matrix[row][col + i] == userKey:
@@ -174,7 +204,7 @@ def evaluateBoardState(matrix, userKey):
             
             # if the win condition is met, set the evaluation total to a really high number
             if winCondition == 4:
-                evaluationTotal += 1000000
+                evaluationTotal += 100000000
             
             
             # check for the selected key (either O or X)
@@ -190,7 +220,7 @@ def evaluateBoardState(matrix, userKey):
                     
                 ''' left '''
                 evaluationTotal = evaluateDirection(matrix, row, col, userKey, 0, -1, evaluationTotal)
-                    
+                
     #print(f"{evaluationTotal = }")
     return evaluationTotal
 
@@ -213,23 +243,13 @@ def evaluateDirection(matrix, row, col, userKey, rowMulti, colMulti, currentTota
                 temp = 0
                 break
         currentTotal += temp
-            
+        
     return currentTotal
 
 
-# function that checks if the coordinates are within the matrix
-def inBounds(matrix, row, col):
-    # we assume that matrix is an n x n matrix
-    n = len(matrix)
-    
-    if row >= n or row < 0 or col >= n or col < 0:
-        return False
-    
-    return True
-
-
 # this function generates children around the already inserted inputs
-def generateChildren(matrix, userKey):
+def generateChildren_v1(board, userKey):
+    matrix = board.matrix
     charList = ["X", "O"]
     n = len(matrix)
     childrenList = []
@@ -239,7 +259,6 @@ def generateChildren(matrix, userKey):
         for col in range(n):
             # search for either X or O to generate children off of
             if matrix[row][col] in charList:
-                #import pdb; pdb.set_trace()
                 # generate the children around inputs
                 ''' up '''
                 childrenList = generateChild(matrix, row - 1, col, userKey, childrenList)
@@ -257,14 +276,15 @@ def generateChildren(matrix, userKey):
 
 
 # this function generates children for every single available space
-def generateChildren_v2(matrix, userKey):
+def generateChildren_v2(board, userKey):
+    matrix = board.matrix
     n = len(matrix)
     childrenList = []
     
     # iterate through the entire matrix
     for row in range(n):
         for col in range(n):
-                childrenList = generateChild(matrix, row, col, userKey, childrenList)
+                childrenList = generateChild(board, row, col, userKey, childrenList)
             
     return childrenList
 
@@ -272,17 +292,33 @@ def generateChildren_v2(matrix, userKey):
 # generates one children in a specific cardinal direction
 def generateChild(parent, row, col, userKey, childrenList):
     # check if there is a bounds error, or value already placed in slot
-    if isSafe(parent, row, col):
-        tempParent = copy.deepcopy(parent)
+    if isSafe(parent.matrix, row, col):
+        tempParent = copy.deepcopy(parent.matrix)
         
         # set the matrix as the userKey (either O or X)
         tempParent[row][col] = userKey
         
         # create a new child node
         child = Board(tempParent)
+        
+        # copies over the move order to the parent
+        child.setMoveOrder(parent.getMoveOrder())
+        # appends the current move to the move order
+        child.appendMove((row, col))
+        
+        # finally, appends the child to the childrenList
         childrenList.append(child)
         
     return childrenList
+
+
+# function that checks if the coordinates are within the matrix
+def inBounds(matrix, row, col):
+    # we assume that matrix is an n x n matrix
+    n = len(matrix)
+    if row >= n or row < 0 or col >= n or col < 0:
+        return False
+    return True
 
 
 # function checks if the spot is both in bounds and is not pre-populated
@@ -300,11 +336,6 @@ def isSafe(matrix, row, col):
         return False
     
     return True
-
-
-# add isSolved to check if the puzzle is done
-def isSolved(matrix):
-    pass
 
 
 def printMatrix(matrix):
