@@ -72,6 +72,31 @@ class Utility_function:
     def __init__(self, evaluation):
         self.evaluation = evaluation
 
+# makes the computer move
+def makeComputerMove(board):
+    # computer the algorithm which returns a tuple
+    move = alpha_beta_search(board, "X") 
+    
+    # set the board move onto the board
+    board.matrix[move[0]][move[1]] = "X"
+
+
+def inputPlayerMove(board):
+    
+    while(True):
+        
+        playerInput = input().strip()
+        
+        if playerInput == 2:
+            row =  playerInput[0].upper()
+            col = playerInput[0]
+            
+        else:
+            print("Invalid input, please try again.")
+        
+        
+        if validMove():
+            break
 
 # alpha beta search algorithm
 def alpha_beta_search(board, userKey):
@@ -88,7 +113,8 @@ def alpha_beta_search(board, userKey):
     # actual algorithm
     boardDescision = max_value(board.matrix, alpha, beta, userKey, terminalTime)
     
-    return boardDescision
+    # returns the singular move that the board should perform
+    return boardDescision.getFirstMove()
 
 
 # half of the recursive calls
