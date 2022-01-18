@@ -14,9 +14,7 @@ class Board:
             self.matrix = [[None for i in range(8)] for i in range(8)]
         else:
             self.matrix = matrix
-
         self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
-        
         self.moveOrder = []
 
     def getMoveOrder(self):
@@ -30,6 +28,9 @@ class Board:
         
     def appendMove(self, move):
         self.moveOrder.append(move)
+        
+    def updateEvaluation(self):
+        self.evaluation = evaluateBoardState(self.matrix, "X") - evaluateBoardState(self.matrix, "O")
 
     # this is what determines the best fit move on the board.
     def getFirstMove(self):
@@ -79,24 +80,32 @@ def makeComputerMove(board):
     
     # set the board move onto the board
     board.matrix[move[0]][move[1]] = "X"
+    
+    board.printMatrix()
 
 
 def inputPlayerMove(board):
-    
+    # while input for input validation
     while(True):
+        playerInput = input("Input the move you wish to make: ").strip()
         
-        playerInput = input().strip()
+        #print(playerInput)
         
-        if playerInput == 2:
-            row =  playerInput[0].upper()
-            col = playerInput[0]
-            
+        if len(playerInput) == 2:
+            row = ord(playerInput[0].upper()) - 65
+            col = int(playerInput[1]) - 1
         else:
+            row = -1
+            col = -1
             print("Invalid input, please try again.")
         
-        
-        if validMove():
+        if isSafe(board.matrix, row, col):
             break
+    
+    board.matrix[row][col] = "O"
+    
+    board.printMatrix()
+
 
 # alpha beta search algorithm
 def alpha_beta_search(board, userKey):
@@ -111,16 +120,16 @@ def alpha_beta_search(board, userKey):
     board.resetMoveOrder()
     
     # actual algorithm
-    boardDescision = max_value(board.matrix, alpha, beta, userKey, terminalTime)
+    boardDecision = max_value(board, alpha, beta, userKey, terminalTime)
     
     # returns the singular move that the board should perform
-    return boardDescision.getFirstMove()
+    return boardDecision.getFirstMove()
 
 
 # half of the recursive calls
 def max_value(board, alpha, beta, userKey, terminalTime):
     # check for terminal condition (time passed (5 seconds))
-    if time.time_ns() >= terminalTime and isSolved(board) == False:
+    if time.time_ns() >= terminalTime or isSolved(board):
         return board
     
     # set the utility holder to negative infinity
@@ -143,7 +152,7 @@ def max_value(board, alpha, beta, userKey, terminalTime):
 # the other half of the recursive calling
 def min_value(board, alpha, beta, userKey, terminalTime):
     # check for terminal condition (time passed (5 seconds))
-    if time.time_ns() >= terminalTime and isSolved(board) == False:
+    if time.time_ns() >= terminalTime or isSolved(board):
         return board
     
     # set the utility holder to positive infinity
@@ -153,7 +162,7 @@ def min_value(board, alpha, beta, userKey, terminalTime):
     successors = generateChildren_v2(board, oppositeKey(userKey))
     
     for obj in successors:
-        v = min_evaluation(v, max_value(obj.matrix, alpha, beta, oppositeKey(userKey), terminalTime))
+        v = min_evaluation(v, max_value(obj, alpha, beta, oppositeKey(userKey), terminalTime))
     
         if v.evaluation <= alpha.evaluation:
             return v
@@ -187,11 +196,12 @@ def oppositeKey(userKey):
     
 # checks the board state to see if it has a solved solution
 def isSolved(board):
+    #import pdb; pdb.set_trace()
     # There is a buffer of 1,000,000 in the evaluation score to acount for all possible combinations
     if (board.evaluation >= 90000000) or (board.evaluation <= -90000000):
         return True
     return False
-
+    
 
 # this function counts the original value in it's calculation
 def evaluateBoardState(matrix, userKey):
@@ -200,41 +210,42 @@ def evaluateBoardState(matrix, userKey):
     # parse through the entire matrix and look for the userKey (either O or X)
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
-            
-            # prioritize winning
-            winCondition = 0
-            # search for win condition on row
-            
-            # checks column for win
-            if inBounds(matrix, row + 3, col):
-                for i in range(4):
-                    if matrix[row + i][col] == userKey:
-                        winCondition += 1
-                    else:
-                        winCondition = 0
-                        break
-                    
-            # if the win condition is met, set the evaluation total to a really high number
-            if winCondition == 4:
-                evaluationTotal += 100000000
-            
-            # checks row for win
-            if inBounds(matrix, row, col + 3):
-                # search for win condition on column
-                for i in range(4):
-                    if matrix[row][col + i] == userKey:
-                        winCondition += 1
-                    else:
-                        winCondition = 0
-                        break
-            
-            # if the win condition is met, set the evaluation total to a really high number
-            if winCondition == 4:
-                evaluationTotal += 100000000
-            
-            
             # check for the selected key (either O or X)
             if matrix[row][col] == userKey:
+                
+                # prioritize winning
+                winCondition = 0
+                # checks column for win
+                if inBounds(matrix, row + 3, col):
+                    for i in range(4):
+                        if matrix[row + i][col] == userKey:
+                            winCondition += 1
+                        else:
+                            winCondition = 0
+                            break
+                        
+                # if the win condition is met, set the evaluation total to a really high number
+                if winCondition == 4:
+                    evaluationTotal = 100000000
+                    return evaluationTotal
+                
+                # checks row for win
+                if inBounds(matrix, row, col + 3):
+                    # search for win condition on column
+                    for i in range(4):
+                        if matrix[row][col + i] == userKey:
+                            winCondition += 1
+                        else:
+                            winCondition = 0
+                            break
+                
+                # if the win condition is met, set the evaluation total to a really high number
+                if winCondition == 4:
+                    evaluationTotal = 100000000
+                    return evaluationTotal
+                
+                
+                
                 ''' up '''
                 evaluationTotal = evaluateDirection(matrix, row, col, userKey, -1, 0, evaluationTotal)
                     
@@ -287,16 +298,16 @@ def generateChildren_v1(board, userKey):
             if matrix[row][col] in charList:
                 # generate the children around inputs
                 ''' up '''
-                childrenList = generateChild(matrix, row - 1, col, userKey, childrenList)
+                childrenList = generateChild(board, row - 1, col, userKey, childrenList)
                 
                 ''' down '''
-                childrenList = generateChild(matrix, row + 1, col, userKey, childrenList)
+                childrenList = generateChild(board, row + 1, col, userKey, childrenList)
                     
                 ''' right '''
-                childrenList = generateChild(matrix, row, col + 1, userKey, childrenList)
+                childrenList = generateChild(board, row, col + 1, userKey, childrenList)
     
                 ''' left '''
-                childrenList = generateChild(matrix, row, col - 1, userKey, childrenList)
+                childrenList = generateChild(board, row, col - 1, userKey, childrenList)
     
     return childrenList
 
@@ -348,7 +359,7 @@ def inBounds(matrix, row, col):
 
 
 # function checks if the spot is both in bounds and is not pre-populated
-def isSafe(matrix, row, col):
+def isSafe(matrix, row = -1, col = -1):
     n = len(matrix)
     
     # bounds check
@@ -364,53 +375,21 @@ def isSafe(matrix, row, col):
     return True
 
 
-def printMatrix(matrix):
-    
-    alphabet = ["A", "B", "C", "D", "E", "F", "G", "H"]
-    n = len(matrix)
-    
-    print("  1 2 3 4 5 6 7 8")
-    for row in range(n):
-        for col in range(n):
-            if col == 0:
-                print(f"{alphabet[row]}", end = " ")
 
-            if matrix[row][col] == None:
-                print("_", end = " ")
-            elif matrix[row][col] == "X":
-                print("X", end = " ")
-            elif matrix[row][col] == "O":
-                print("O", end = " ")
-            elif matrix[row][col] == "W":
-                print("W", end = " ")
-        print()
-    print()
 
 
 if __name__ == "__main__":
     
-    blank =[[None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None,  "X", None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None]]
-    
-    test = [[None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None,  "X", None, None, None, None, None],
-            [None, None, None, None,  "O", None, None, None],
-            [None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None]]
-    
-    #evaluationTotal = test1(computer) - test2(user)
-    
-    #printMatrix(blank)
-    
-    child = generateChildren_v2(blank, "O")
 
-    child[0].printMatrix()
+    
+    myBoard = Board()
+    
+    myBoard.printMatrix()
+    
+    while(not isSolved(myBoard)):
+        inputPlayerMove(myBoard)
+        
+        myBoard.updateEvaluation()
+        makeComputerMove(myBoard)
+    
+    print("eof")
