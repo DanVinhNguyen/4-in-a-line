@@ -1,5 +1,5 @@
 # 4-in-a-line
-This program utilizing alpha-beta pruning to play a game of 4-in-a-line with the player.
+This program utilizing alpha-beta pruning version of the mini-max algorithm to play a game of 4-in-a-line with the player.
 
 ## Mini-Max Algorithm: 
 
