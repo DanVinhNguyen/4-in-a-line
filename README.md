@@ -7,7 +7,7 @@ The mini-max algorithm assumes that each player will choose the action that maxi
 ## Alpha-Beta Pruning
 This is an artificial intelligence search algorithm that seeks to reduced the number of nodes that are evaluated in the minimax algorithm search tree.
 
-## Approach:
+## Approach to the Algorithm
 To start the project I took a class-based approach, where I would generate a board state and input it into a class. This class would then calculate the evaluation of the board, which utilized a weighted approach to determine if there was enough space for a win condition to exist.
 
 ## Approach to Weight Based System
